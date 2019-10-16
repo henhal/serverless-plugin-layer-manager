@@ -1,0 +1,28 @@
+{
+  "main": "LayerManagerPlugin.js",
+  "name": "serverless-plugin-layer-manager",
+  "version": "1.0.0",
+  "description": "Plugin for the Serverless framework that offers improved AWS Lambda layer management",
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/henhal/serverless-plugin-layer-manager.git"
+  },
+  "keywords": [
+    "serverless",
+    "aws",
+    "lambda",
+    "layers"
+  ],
+  "author": "Henrik Hall",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/henhal/serverless-plugin-layer-manager/issues"
+  },
+  "homepage": "https://github.com/henhal/serverless-plugin-layer-manager#readme",
+  "devDependencies": {},
+  "dependencies": {
+    "pascalcase": "^1.0.0"
+  }
+}
