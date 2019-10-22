@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "description": "Plugin for the Serverless framework that offers improved AWS Lambda layer management",
   "scripts": {
+    "test": "mocha -R spec --recursive --timeout 10000"
   },
   "repository": {
     "type": "git",
@@ -21,7 +22,10 @@
     "url": "https://github.com/henhal/serverless-plugin-layer-manager/issues"
   },
   "homepage": "https://github.com/henhal/serverless-plugin-layer-manager#readme",
-  "devDependencies": {},
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.2.2"
+  },
   "dependencies": {
     "pascalcase": "^1.0.0"
   }

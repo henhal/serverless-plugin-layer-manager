@@ -1,3 +1,7 @@
+const {
+  LOG_LEVEL = 'info'
+} = process.env;
+
 const {execSync} = require('child_process');
 const pascalcase = require('pascalcase');
 const fs = require('fs');
@@ -9,6 +13,24 @@ const DEFAULT_CONFIG = {
   exportPrefix: '${AWS::StackName}-'
 };
 
+const LEVELS = {
+  none: 0,
+  info: 1,
+  verbose: 2
+};
+
+function log(...s) {
+  console.log('[layer-manager]', ...s);
+}
+
+function verbose({level}, ...s) {
+  LEVELS[level] >= LEVELS.verbose && log(...s);
+}
+
+function info({level}, ...s) {
+  LEVELS[level] >= LEVELS.info && log(...s);
+}
+
 function getLayers(serverless) {
   return serverless.service.layers || {};
 }
@@ -19,24 +41,13 @@ function getConfig(serverless) {
   return {...DEFAULT_CONFIG, ...custom.layerConfig};
 }
 
-function log(...s) {
-  console.log('[layer-manager]', ...s);
-}
-
-function verbose({level}, ...s) {
-  level === 'verbose' && log(...s);
-}
-
-function info({level}, ...s) {
-  log(...s);
-}
-
-
 class LayerManagerPlugin {
   constructor(sls, options = {}) {
-    this.level = options.v || options.verbose ? 'verbose' : 'info';
+    this.level = options.v || options.verbose ? 'verbose' : LOG_LEVEL;
+    this.config = getConfig(sls);
 
     info(this, `Invoking layer-manager plugin`);
+    verbose(this, `Config: `, this.config);
 
     this.hooks = {
       'package:initialize': () => this.installLayers(sls),
@@ -44,36 +55,43 @@ class LayerManagerPlugin {
     };
   }
 
-  installLayers(sls) {
-    const config = getConfig(sls);
+  installLayer(path) {
+    const nodeLayerPath = `${path}/nodejs`;
 
-    if (!config.installLayers) {
+    if (fs.existsSync(nodeLayerPath)) {
+      verbose(this, `Installing nodejs layer ${path}`);
+      execSync(`npm install --prefix ${nodeLayerPath}`, {
+        stdio: 'inherit'
+      });
+      return true;
+    }
+
+    return false;
+  }
+
+  installLayers(sls) {
+    const {installLayers} = this.config;
+
+    if (!installLayers) {
+      verbose(this, `Skipping installation of layers as per config`);
       return;
     }
 
     const layers = getLayers(sls);
-    let i = 0;
-    Object.values(layers).forEach(({path}) => {
-      const nodeLayerPath = `${path}/nodejs`;
+    const installedLayers = Object.values(layers)
+      .filter(({path}) => this.installLayer(path));
 
-      if (fs.existsSync(nodeLayerPath)) {
-        verbose(this, `Installing nodejs layer ${path}`);
-        execSync(`npm install --prefix ${nodeLayerPath}`, {
-          stdio: 'inherit'
-        });
-        i++;
-      }
-    });
+    info(this, `Installed ${installedLayers.length} layers`);
 
-    info(this, `Installed ${i} layers`);
+    return {installedLayers};
   }
 
   transformLayerResources(sls) {
-    const config = getConfig(sls);
+    const {exportLayers, exportPrefix, upgradeLayerReferences} = this.config;
     const layers = getLayers(sls);
     const {compiledCloudFormationTemplate: cf} = sls.service.provider;
 
-    Object.keys(layers).forEach(id => {
+    return Object.keys(layers).reduce((result, id) => {
       const name = pascalcase(id);
       const exportName = `${name}LambdaLayerQualifiedArn`;
       const output = cf.Outputs[exportName];
@@ -82,15 +100,16 @@ class LayerManagerPlugin {
         return;
       }
 
-      if (config.exportLayers) {
+      if (exportLayers) {
         output.Export = {
           Name: {
-            'Fn::Sub': config.exportPrefix + exportName
+            'Fn::Sub': exportPrefix + exportName
           }
         };
+        result.exportedLayers.push(output);
       }
 
-      if (config.upgradeLayerReferences) {
+      if (upgradeLayerReferences) {
         const resourceRef = `${name}LambdaLayer`;
         const versionedResourceRef = output.Value.Ref;
 
@@ -98,12 +117,13 @@ class LayerManagerPlugin {
           info(this, `Replacing references to ${resourceRef} with ${versionedResourceRef}`);
 
           Object.entries(cf.Resources)
-            .forEach(([id, {Type, Properties: {Layers = []} = {}}]) => {
-              if (Type === 'AWS::Lambda::Function') {
-                Layers.forEach(Layer => {
-                  if (Layer.Ref === resourceRef) {
+            .forEach(([id, {Type: type, Properties: {Layers: layers = []} = {}}]) => {
+              if (type === 'AWS::Lambda::Function') {
+                layers.forEach(layer => {
+                  if (layer.Ref === resourceRef) {
                     verbose(this, `${id}: Updating reference to layer version ${versionedResourceRef}`);
-                    Layer.Ref = versionedResourceRef;
+                    layer.Ref = versionedResourceRef;
+                    result.upgradedLayerReferences.push(layer);
                   }
                 })
               }
@@ -112,6 +132,11 @@ class LayerManagerPlugin {
       }
 
       verbose(this, 'CF after transformation:\n', JSON.stringify(cf, null, 2));
+
+      return result;
+    }, {
+      exportedLayers: [],
+      upgradedLayerReferences: []
     });
   }
 }
