@@ -1,0 +1,11 @@
+{
+  "name": "example-layer-service",
+  "version": "1.0.0",
+  "description": "Example service for serverless-plugin-layer-manager",
+  "scripts": {},
+  "author": "Henrik Hall",
+  "license": "ISC",
+  "devDependencies": {
+    "serverless-plugin-layer-manager": "^1.0.2"
+  }
+}

@@ -1,0 +1,29 @@
+service: example-layer-service
+provider:
+  name: aws
+  runtime: nodejs12.x
+
+plugins:
+  - serverless-plugin-layer-manager
+
+layers:
+  myLib:
+    path: ./my-lib
+    name: my-lib
+    description: My library
+    retain: true
+
+functions:
+  hello:
+    handler: hello.handler
+    layers:
+      # Note the reference being the TitleCase representation of the layer id followed by "LambdaLayer"
+      - {Ref: MyLibLambdaLayer}
+
+#custom:
+#  layerConfig:
+#    installLayers: <boolean>
+#    exportLayers: <boolean>
+#    upgradeLayerReferences: <boolean>
+#    exportPrefix: <prefix used for the names of the exported layers>
+

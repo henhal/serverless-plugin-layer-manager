@@ -39,7 +39,8 @@ functions:
   hello:
     handler: index.handler
     layers:
-      - !Ref: LibLambdaLayer # TitleCase layer name followed by LambdaLayer 
+      # Note the reference being the TitleCase representation of the layer id followed by "LambdaLayer"
+      - {Ref: LibLambdaLayer}
 ```
 
 The `lib` layer will be installed and its `node_modules` packaged into the artifact, and the function will use the layer.
