@@ -44,15 +44,21 @@ function getConfig(serverless) {
 class LayerManagerPlugin {
   constructor(sls, options = {}) {
     this.level = options.v || options.verbose ? 'verbose' : LOG_LEVEL;
-    this.config = getConfig(sls);
 
     info(this, `Invoking layer-manager plugin`);
-    verbose(this, `Config: `, this.config);
 
     this.hooks = {
-      'package:initialize': () => this.installLayers(sls),
+      'package:initialize': () => {
+        this.init(sls);
+        this.installLayers(sls)
+      },
       'before:deploy:deploy': () => this.transformLayerResources(sls)
     };
+  }
+
+  init(sls) {
+    this.config = getConfig(sls);
+    verbose(this, `Config: `, this.config);
   }
 
   installLayer(path) {

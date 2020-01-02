@@ -20,10 +20,11 @@ functions:
       # Note the reference being the TitleCase representation of the layer id followed by "LambdaLayer"
       - {Ref: MyLibLambdaLayer}
 
-#custom:
-#  layerConfig:
-#    installLayers: <boolean>
-#    exportLayers: <boolean>
-#    upgradeLayerReferences: <boolean>
-#    exportPrefix: <prefix used for the names of the exported layers>
+custom:
+  foo: FOO
+  layerConfig:
+    installLayers: true
+    exportLayers: true
+    upgradeLayerReferences: true
+    exportPrefix:  ${self:service}-${self:custom.foo}- # prefix used for the names of the exported layers
 
