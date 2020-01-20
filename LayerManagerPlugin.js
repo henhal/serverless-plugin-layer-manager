@@ -66,8 +66,9 @@ class LayerManagerPlugin {
 
     if (fs.existsSync(nodeLayerPath)) {
       verbose(this, `Installing nodejs layer ${path}`);
-      execSync(`npm install --prefix ${nodeLayerPath}`, {
-        stdio: 'inherit'
+      execSync('npm install', {
+        stdio: 'inherit',
+        cwd: nodeLayerPath
       });
       return true;
     }
