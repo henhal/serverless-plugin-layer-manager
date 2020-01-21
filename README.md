@@ -1,4 +1,8 @@
 # serverless-plugin-layer-manager
+
+[![NPM version](https://img.shields.io/npm/v/serverless-plugin-layer-manager.svg)](https://www.npmjs.com/package/serverless-plugin-layer-manager)
+[![Build Status](https://travis-ci.com/henhal/serverless-plugin-layer-manager.svg?branch=master)](https://travis-ci.com/henhal/serverless-plugin-layer-manager)
+
 Plugin for the Serverless framework that offers improved AWS Lambda layer management.
 
 The Serverless framework supports AWS Lambda layers, but there are some shortcomings:

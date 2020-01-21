@@ -1,5 +1,5 @@
 const {expect} = require('chai');
-const Plugin = require('../LayerManagerPlugin');
+const LayerManagerPlugin = require('../LayerManagerPlugin');
 
 const DEFAULT_CONFIG = {
   exportLayers: true,
@@ -8,7 +8,7 @@ const DEFAULT_CONFIG = {
   upgradeLayerReferences: true
 };
 
-function createSls(layerConfig) {
+function createSls(layerConfig = {}) {
   return {
     service: {
       provider: {
@@ -78,9 +78,23 @@ function createSls(layerConfig) {
   };
 }
 
+class Plugin extends LayerManagerPlugin {
+  // Mock the install method
+  installLayer(path) {
+    return true;
+  }
+}
+
+function createPlugin(sls, options) {
+  const plugin = new Plugin(sls, options);
+  plugin.init(sls);
+
+  return plugin;
+}
+
 describe(`Plugin tests`, () => {
   it(`should create plugin with default config successfully`, async () => {
-    const plugin = new Plugin(createSls());
+    const plugin = createPlugin(createSls());
 
     expect(plugin.config).to.eql(DEFAULT_CONFIG);
   });
@@ -92,7 +106,7 @@ describe(`Plugin tests`, () => {
       installLayers: false,
     };
 
-    const plugin = new Plugin(createSls(config));
+    const plugin = createPlugin(createSls(config));
 
     expect(plugin.config).to.eql({
       ...DEFAULT_CONFIG,
@@ -101,38 +115,34 @@ describe(`Plugin tests`, () => {
   });
 
   it('should set log level using -v or --verbose flag', () => {
-    expect(new Plugin(createSls()).level).to.not.equal('verbose');
-    expect(new Plugin(createSls(), {v: true}).level).to.equal('verbose');
-    expect(new Plugin(createSls(), {verbose: true}).level).to.equal('verbose');
+    expect(createPlugin(createSls()).level).to.not.equal('verbose');
+    expect(createPlugin(createSls(), {v: true}).level).to.equal('verbose');
+    expect(createPlugin(createSls(), {verbose: true}).level).to.equal('verbose');
   });
 
   it(`should install layers successfully`, async () => {
     const sls = createSls();
-    const plugin = new Plugin(sls);
+    const plugin = createPlugin(sls);
 
-    // Mock installer
-    plugin.installLayer = path => true;
-
-    const {installedLayers} = plugin.hooks['package:initialize'](sls);
+    const {installedLayers} = plugin.installLayers(sls);
     expect(installedLayers).to.have.lengthOf(2);
   });
 
   it(`should export layers successfully`, async () => {
     const sls = createSls({exportLayers: true, upgradeLayerReferences: false});
-    const plugin = new Plugin(sls);
+    const plugin = createPlugin(sls);
 
-    const {exportedLayers, upgradedLayerReferences} = plugin.hooks['before:deploy:deploy'](sls);
+    const {exportedLayers, upgradedLayerReferences} = plugin.transformLayerResources(sls);
     expect(exportedLayers).to.have.lengthOf(2);
     expect(upgradedLayerReferences).to.have.lengthOf(0);
   });
 
   it(`should upgrade versioned layer references successfully`, async () => {
     const sls = createSls({exportLayers: false, upgradeLayerReferences: true});
-    const plugin = new Plugin(sls);
+    const plugin = createPlugin(sls);
 
-    const {exportedLayers, upgradedLayerReferences} = plugin.hooks['before:deploy:deploy'](sls);
+    const {exportedLayers, upgradedLayerReferences} = plugin.transformLayerResources(sls);
     expect(exportedLayers).to.have.lengthOf(0);
     expect(upgradedLayerReferences).to.have.lengthOf(1);
   });
-
 });
