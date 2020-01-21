@@ -8,6 +8,7 @@ const fs = require('fs');
 
 const DEFAULT_CONFIG = {
   installLayers: true,
+  installOptions: [],
   exportLayers: true,
   upgradeLayerReferences: true,
   exportPrefix: '${AWS::StackName}-'
@@ -63,10 +64,11 @@ class LayerManagerPlugin {
 
   installLayer(path) {
     const nodeLayerPath = `${path}/nodejs`;
+    const installArgsString = this.config.installOptions ? this.config.installOptions.join(' ') : '';
 
     if (fs.existsSync(nodeLayerPath)) {
       verbose(this, `Installing nodejs layer ${path}`);
-      execSync('npm install', {
+      execSync(`npm install ${installArgsString}`, {
         stdio: 'inherit',
         cwd: nodeLayerPath
       });
