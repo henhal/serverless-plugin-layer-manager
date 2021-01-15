@@ -5,6 +5,7 @@ const DEFAULT_CONFIG = {
   exportLayers: true,
   exportPrefix: '${AWS::StackName}-',
   installLayers: true,
+  installOptions: [],
   upgradeLayerReferences: true
 };
 

@@ -55,9 +55,10 @@ You may customize the features by adding a `layerConfig` object under `custom`, 
 custom:
   layerConfig:
     installLayers: <boolean>
+    installOptions: <array>
     exportLayers: <boolean>
     upgradeLayerReferences: <boolean>
     exportPrefix: <prefix used for the names of the exported layers>
 ```
 
-By default, all config options are true and the `exportPrefix` is set to `${AWS:StackName}-`.
+By default, all config options are true, the `exportPrefix` is set to `${AWS:StackName}-` and installOptions is an empty array.
