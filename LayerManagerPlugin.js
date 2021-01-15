@@ -94,7 +94,7 @@ class LayerManagerPlugin {
   }
 
   transformLayerResources(sls) {
-    const {exportLayers, exportPrefix, upgradeLayerReferences} = this.config;
+    const {exportLayers, exportPrefix, upgradeLayerReferences} = this.config || DEFAULT_CONFIG;
     const layers = getLayers(sls);
     const {compiledCloudFormationTemplate: cf} = sls.service.provider;
 
