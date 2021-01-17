@@ -10,7 +10,8 @@ const DEFAULT_CONFIG = {
   installLayers: true,
   exportLayers: true,
   upgradeLayerReferences: true,
-  exportPrefix: '${AWS::StackName}-'
+  exportPrefix: '${AWS::StackName}-',
+  packager: "npm", // npm | yarn
 };
 
 const LEVELS = {
@@ -66,7 +67,7 @@ class LayerManagerPlugin {
 
     if (fs.existsSync(nodeLayerPath)) {
       verbose(this, `Installing nodejs layer ${path}`);
-      execSync('npm install', {
+      execSync(`${this.config.packager} install`, {
         stdio: 'inherit',
         cwd: nodeLayerPath
       });
