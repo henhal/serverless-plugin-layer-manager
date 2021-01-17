@@ -5,7 +5,8 @@ const DEFAULT_CONFIG = {
   exportLayers: true,
   exportPrefix: '${AWS::StackName}-',
   installLayers: true,
-  upgradeLayerReferences: true
+  upgradeLayerReferences: true,
+  packager: "npm"
 };
 
 function createSls(layerConfig = {}) {
