@@ -61,12 +61,14 @@ class LayerManagerPlugin {
     verbose(this, `Config: `, this.config);
   }
 
-  installLayer(path) {
+  installLayer(path, custom) {
     const nodeLayerPath = `${path}/nodejs`;
 
     if (fs.existsSync(nodeLayerPath)) {
-      verbose(this, `Installing nodejs layer ${path}`);
-      execSync('npm install', {
+      const command = custom.unSafePermissions ? 'npm install --unsafe-perm' : 'npm install';
+      verbose(this, `Installing nodejs layer ${path} using ${command}`);
+
+      execSync(command, {
         stdio: 'inherit',
         cwd: nodeLayerPath
       });
@@ -85,8 +87,14 @@ class LayerManagerPlugin {
     }
 
     const layers = getLayers(sls);
-    const installedLayers = Object.values(layers)
-      .filter(({path}) => this.installLayer(path));
+    const installedLayers = Object.keys(layers)
+      .filter((layerName) => {
+        const config = layers[layerName];
+        const {path} = config;
+        const custom = this.getCustomByLayer(sls, layerName);
+
+        return this.installLayer(path, custom);
+      });
 
     info(this, `Installed ${installedLayers.length} layers`);
 
@@ -145,6 +153,11 @@ class LayerManagerPlugin {
       exportedLayers: [],
       upgradedLayerReferences: []
     });
+  }
+
+  getCustomByLayer(sls, layerName) {
+    const layerManager = sls.service.custom?.plugin?.layerManager || {};
+    return layerManager[layerName];
   }
 }
 
