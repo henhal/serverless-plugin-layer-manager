@@ -1,3 +1,5 @@
+# FORKED FROM https://github.com/henhal/serverless-plugin-layer-manager
+
 # serverless-plugin-layer-manager
 
 [![NPM version](https://img.shields.io/npm/v/serverless-plugin-layer-manager.svg)](https://www.npmjs.com/package/serverless-plugin-layer-manager)
