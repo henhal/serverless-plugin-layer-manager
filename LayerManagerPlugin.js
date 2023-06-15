@@ -65,7 +65,7 @@ class LayerManagerPlugin {
     const nodeLayerPath = `${path}/nodejs`;
 
     if (fs.existsSync(nodeLayerPath)) {
-      const command = custom.unSafePermissions ? 'npm install --unsafe-perm' : 'npm install';
+      const command = custom.unsafePermissions ? 'npm install --unsafe-perm' : 'npm install';
       verbose(this, `Installing nodejs layer ${path} using ${command}`);
 
       execSync(command, {
