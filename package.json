@@ -1,7 +1,7 @@
 {
   "main": "LayerManagerPlugin.js",
-  "name": "serverless-plugin-layer-manager",
-  "version": "1.0.5",
+  "name": "@ccruz2886/serverless-plugin-layer-manager",
+  "version": "1.1.0",
   "description": "Plugin for the Serverless framework that offers improved AWS Lambda layer management",
   "scripts": {
     "test": "mocha -R spec --recursive --timeout 10000"
